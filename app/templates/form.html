@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="form-card">
+  <h2>{% if action == 'Create' %}➕ Create New Task{% else %}✏ Update Task{% endif %}</h2>
+
+  <form method="POST">
+
+    <div class="form-group">
+      <label for="title">Title <span style="color:#ef4444">*</span></label>
+      <input type="text" id="title" name="title" maxlength="120" required
+             placeholder="e.g. Math Assignment Chapter 5"
+             value="{{ task.title if task else '' }}"/>
+      <span class="hint">Max 120 characters</span>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea id="description" name="description" maxlength="500"
+                placeholder="Optional details about the task…">{{ task.description if task else '' }}</textarea>
+      <span class="hint">Max 500 characters</span>
+    </div>
+
+    <div class="form-group">
+      <label for="due_date">Due Date <span style="color:#ef4444">*</span></label>
+      <input type="date" id="due_date" name="due_date" required
+             value="{{ task.due_date if task else '' }}"/>
+    </div>
+
+    <div class="form-group">
+      <label for="priority">Priority <span style="color:#ef4444">*</span></label>
+      <select id="priority" name="priority" required>
+        <option value="" disabled {% if not task %}selected{% endif %}>Select priority…</option>
+        {% for p in ['Low', 'Medium', 'High'] %}
+          <option value="{{ p }}" {% if task and task.priority == p %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    {% if action == 'Update' %}
+    <div class="form-group">
+      <label>Status</label>
+      <div class="checkbox-row">
+        <input type="checkbox" id="completed" name="completed"
+               {% if task and task.completed %}checked{% endif %}/>
+        <label for="completed" style="font-weight:400;">Mark as completed</label>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">
+        {% if action == 'Create' %}Create Task{% else %}Save Changes{% endif %}
+      </button>
+      <a class="btn btn-secondary" href="{{ url_for('index') }}">Cancel</a>
+    </div>
+
+  </form>
+</div>
+
+{% endblock %}

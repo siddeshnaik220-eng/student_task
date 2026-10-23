@@ -1,5 +1,5 @@
-# No third-party runtime dependencies.
-# All standard-library modules are used: json, os, uuid, dataclasses, datetime.
+# ── web interface ─────────────────────────────────────────────────────────────
+flask>=3.0
 
-# ── development / testing ──────────────────────────────────────────────────
+# ── development / testing ──────────────────────────────────────────────────────
 pytest>=8.0

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Task Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f0f4ff;
+      --surface:   #ffffff;
+      --primary:   #4f46e5;
+      --primary-h: #4338ca;
+      --danger:    #ef4444;
+      --danger-h:  #dc2626;
+      --success:   #22c55e;
+      --warn:      #f59e0b;
+      --muted:     #6b7280;
+      --border:    #e5e7eb;
+      --radius:    12px;
+      --shadow:    0 2px 12px rgba(0,0,0,.08);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: #111827;
+      min-height: 100vh;
+    }
+
+    /* ── nav ── */
+    nav {
+      background: var(--primary);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      box-shadow: 0 2px 8px rgba(79,70,229,.3);
+    }
+    nav .brand { color: #fff; font-weight: 700; font-size: 1.1rem; display:flex; align-items:center; gap:.5rem; }
+    nav .brand span { font-size:1.4rem; }
+    nav a.btn-nav {
+      background: rgba(255,255,255,.15);
+      color: #fff;
+      text-decoration: none;
+      padding: .4rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: .9rem;
+      transition: background .2s;
+    }
+    nav a.btn-nav:hover { background: rgba(255,255,255,.28); }
+
+    /* ── layout ── */
+    main { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+
+    /* ── flash messages ── */
+    .flash { padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1.2rem; font-weight: 500; font-size: .92rem; }
+    .flash.success { background: #dcfce7; color: #166534; }
+    .flash.error   { background: #fee2e2; color: #991b1b; }
+
+    /* ── section header ── */
+    .page-header { display: flex; align-items:center; justify-content:space-between; margin-bottom: 1.4rem; }
+    .page-header h1 { font-size: 1.4rem; font-weight: 700; }
+    .badge-count { background: var(--primary); color:#fff; border-radius:99px; padding:.2rem .7rem; font-size:.8rem; font-weight:600; }
+
+    /* ── empty state ── */
+    .empty { text-align:center; padding: 4rem 1rem; color: var(--muted); }
+    .empty .icon { font-size: 3.5rem; }
+    .empty p { margin-top:.6rem; font-size: 1rem; }
+
+    /* ── task grid ── */
+    .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.1rem; }
+
+    /* ── task card ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.1rem 1.2rem;
+      border: 1.5px solid transparent;
+      transition: transform .18s, border-color .18s;
+      display: flex;
+      flex-direction: column;
+      gap: .55rem;
+    }
+    .card:hover { transform: translateY(-2px); border-color: #c7d2fe; }
+    .card.done { opacity: .7; }
+
+    .card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:.5rem; }
+    .card-title { font-weight: 700; font-size: 1rem; line-height: 1.3; word-break:break-word; }
+    .card.done .card-title { text-decoration: line-through; color: var(--muted); }
+
+    /* priority badge */
+    .pri { font-size: .7rem; font-weight: 700; padding: .2rem .55rem; border-radius: 99px; white-space:nowrap; }
+    .pri-High   { background:#fee2e2; color:#991b1b; }
+    .pri-Medium { background:#fef9c3; color:#854d0e; }
+    .pri-Low    { background:#dcfce7; color:#166534; }
+
+    .card-id   { font-size:.72rem; color:var(--muted); font-family:monospace; }
+    .card-desc { font-size:.85rem; color:#374151; word-break:break-word; }
+    .card-desc.muted { color:var(--muted); font-style:italic; }
+
+    .card-meta { display:flex; flex-wrap:wrap; gap:.4rem .8rem; font-size:.8rem; color:var(--muted); }
+    .card-meta span { display:flex; align-items:center; gap:.25rem; }
+
+    /* status pill */
+    .status { display:inline-flex; align-items:center; gap:.3rem; font-size:.78rem; font-weight:600; padding:.2rem .6rem; border-radius:99px; }
+    .status.done    { background:#dcfce7; color:#166534; }
+    .status.pending { background:#f1f5f9; color:#64748b; }
+
+    /* card actions */
+    .card-actions { display:flex; gap:.5rem; margin-top:.2rem; }
+    .btn { display:inline-flex; align-items:center; gap:.3rem; padding:.38rem .85rem; border-radius:8px; font-size:.82rem; font-weight:600; cursor:pointer; border:none; text-decoration:none; transition:background .18s, transform .1s; }
+    .btn:active { transform:scale(.97); }
+    .btn-edit   { background:#e0e7ff; color:#3730a3; }
+    .btn-edit:hover   { background:#c7d2fe; }
+    .btn-toggle { background:#f0fdf4; color:#15803d; }
+    .btn-toggle:hover { background:#bbf7d0; }
+    .btn-del    { background:#fee2e2; color:#b91c1c; margin-left:auto; }
+    .btn-del:hover { background:#fecaca; }
+
+    /* ── form page ── */
+    .form-card { background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); padding:2rem; max-width:520px; margin:0 auto; }
+    .form-card h2 { font-size:1.2rem; font-weight:700; margin-bottom:1.4rem; }
+    .form-group { display:flex; flex-direction:column; gap:.4rem; margin-bottom:1.1rem; }
+    label { font-size:.85rem; font-weight:600; color:#374151; }
+    input[type=text], input[type=date], select, textarea {
+      width:100%; padding:.6rem .85rem; border:1.5px solid var(--border);
+      border-radius:8px; font-size:.92rem; font-family:inherit;
+      transition:border-color .18s;
+      background: #fafafa;
+    }
+    input:focus, select:focus, textarea:focus { outline:none; border-color:var(--primary); background:#fff; }
+    textarea { resize:vertical; min-height:80px; }
+    .hint { font-size:.75rem; color:var(--muted); }
+
+    .checkbox-row { display:flex; align-items:center; gap:.5rem; }
+    .checkbox-row input[type=checkbox] { width:1rem; height:1rem; accent-color:var(--primary); }
+
+    .form-actions { display:flex; gap:.75rem; margin-top:1.4rem; }
+    .btn-primary { background:var(--primary); color:#fff; padding:.55rem 1.3rem; font-size:.92rem; }
+    .btn-primary:hover { background:var(--primary-h); }
+    .btn-secondary { background:#f3f4f6; color:#374151; padding:.55rem 1.1rem; font-size:.92rem; }
+    .btn-secondary:hover { background:#e5e7eb; }
+
+    /* confirm modal */
+    .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:100; align-items:center; justify-content:center; }
+    .modal-bg.open { display:flex; }
+    .modal { background:#fff; border-radius:var(--radius); padding:1.8rem; max-width:360px; width:90%; box-shadow:0 8px 40px rgba(0,0,0,.18); }
+    .modal h3 { font-size:1.05rem; font-weight:700; margin-bottom:.6rem; }
+    .modal p  { font-size:.88rem; color:var(--muted); margin-bottom:1.2rem; }
+    .modal-actions { display:flex; gap:.6rem; justify-content:flex-end; }
+
+    @media(max-width:480px){
+      nav { padding: 0 1rem; }
+      .task-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="brand"><span>📚</span> Student Task Manager</div>
+  {% if request.endpoint != 'create' %}
+    <a class="btn-nav" href="{{ url_for('create') }}">+ New Task</a>
+  {% else %}
+    <a class="btn-nav" href="{{ url_for('index') }}">← Back</a>
+  {% endif %}
+</nav>
+
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="flash {{ cat }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<!-- Delete confirm modal -->
+<div class="modal-bg" id="delModal">
+  <div class="modal">
+    <h3>🗑 Delete Task?</h3>
+    <p id="delMsg">This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <form id="delForm" method="POST">
+        <button class="btn btn-del" type="submit">Yes, Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmDelete(taskId, title) {
+    document.getElementById('delMsg').textContent = `Delete "${title}"? This cannot be undone.`;
+    document.getElementById('delForm').action = `/delete/${taskId}`;
+    document.getElementById('delModal').classList.add('open');
+  }
+  function closeModal() {
+    document.getElementById('delModal').classList.remove('open');
+  }
+  document.getElementById('delModal').addEventListener('click', function(e){
+    if (e.target === this) closeModal();
+  });
+</script>
+</body>
+</html>

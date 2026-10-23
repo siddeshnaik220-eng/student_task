@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <h1>My Tasks <span class="badge-count">{{ tasks|length }}</span></h1>
+</div>
+
+{% if tasks %}
+<div class="task-grid">
+  {% for task in tasks %}
+  <div class="card {% if task.completed %}done{% endif %}">
+
+    <div class="card-top">
+      <span class="card-title">{{ task.title }}</span>
+      <span class="pri pri-{{ task.priority }}">{{ task.priority }}</span>
+    </div>
+
+    <div class="card-id">ID: {{ task.id }}</div>
+
+    {% if task.description %}
+      <div class="card-desc">{{ task.description }}</div>
+    {% else %}
+      <div class="card-desc muted">No description</div>
+    {% endif %}
+
+    <div class="card-meta">
+      <span>📅 {{ task.due_date }}</span>
+      <span>
+        {% if task.completed %}
+          <span class="status done">✔ Completed</span>
+        {% else %}
+          <span class="status pending">○ Pending</span>
+        {% endif %}
+      </span>
+    </div>
+
+    <div class="card-actions">
+      <a class="btn btn-edit" href="{{ url_for('update', task_id=task.id) }}">✏ Edit</a>
+
+      <form method="POST" action="{{ url_for('toggle', task_id=task.id) }}">
+        {% if task.completed %}
+          <button class="btn btn-toggle" type="submit">↩ Reopen</button>
+        {% else %}
+          <button class="btn btn-toggle" type="submit">✔ Done</button>
+        {% endif %}
+      </form>
+
+      <button class="btn btn-del" onclick="confirmDelete('{{ task.id }}', '{{ task.title | replace("'", "\\'") }}')">🗑 Delete</button>
+    </div>
+
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="empty">
+  <div class="icon">📋</div>
+  <p>No tasks yet.</p>
+  <p style="margin-top:.4rem"><a href="{{ url_for('create') }}" style="color:var(--primary);font-weight:600;">Create your first task →</a></p>
+</div>
+{% endif %}
+
+{% endblock %}
